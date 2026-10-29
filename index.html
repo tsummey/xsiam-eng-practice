@@ -1,0 +1,2648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="XSIAM Practice">
+<meta name="theme-color" content="#0f1115">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22XSIAM%20Engineer%20Practice%20Exam%22%2C%22short_name%22%3A%22XSIAM%20Practice%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f1115%22%2C%22theme_color%22%3A%22%230f1115%22%7D">
+<title>XSIAM Engineer Practice Exam</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #1a1d24;
+    --border: #2c303a;
+    --text: #e6e8eb;
+    --muted: #9aa1ad;
+    --accent: #5b8cff;
+    --good: #3ddc84;
+    --bad: #ff5c5c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px;
+  }
+  .app { width: 100%; max-width: 760px; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; }
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+  .toolbar select, .toolbar button {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  button.primary, .toolbar button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+  .progress {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  .bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 24px; }
+  .bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.2s ease; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+  .qtext { font-size: 1.05rem; line-height: 1.5; margin-bottom: 18px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .qimg { display: block; max-width: 100%; height: auto; margin: 0 0 18px; border-radius: 8px; border: 1px solid var(--border); background: #fff; }
+  pre.code {
+    margin: 8px 0;
+    padding: 10px 12px;
+    background: #0d0f13;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font: 0.82rem/1.45 ui-monospace, SFMono-Regular, Consolas, Menlo, monospace;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: #d6e2ff;
+  }
+  code.inline { font: 0.9em ui-monospace, SFMono-Regular, Consolas, Menlo, monospace; background: #0d0f13; padding: 1px 5px; border-radius: 4px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    background: #15171d;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .option:hover { border-color: var(--accent); }
+  .option.selected { border-color: var(--accent); background: #16203a; }
+  .option.correct { border-color: var(--good); background: #103420; }
+  .option.incorrect { border-color: var(--bad); background: #3a1414; }
+  .option.locked { cursor: default; }
+  .option .letter { font-weight: 700; color: var(--muted); min-width: 18px; flex-shrink: 0; }
+  .option .otext { flex: 1; min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+  .option.correct .letter { color: var(--good); }
+  .option.incorrect .letter { color: var(--bad); }
+  .feedback { margin-top: 16px; padding: 12px 14px; border-radius: 10px; font-size: 0.9rem; display: none; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .feedback.show { display: block; }
+  .feedback.right { background: #103420; color: var(--good); }
+  .feedback.wrong { background: #3a1414; color: var(--bad); }
+  .nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
+  .nav .right { display: flex; gap: 10px; }
+  .nav button {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  .nav button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .nav button.next, .nav button.submit { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .summary { text-align: center; padding: 40px 20px; }
+  .summary .score { font-size: 2.4rem; font-weight: 700; margin: 10px 0; }
+  .summary button { background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 10px 18px; font-size: 0.9rem; cursor: pointer; margin: 0 4px; }
+  .summary button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .review-item { text-align: left; border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-top: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .review-item .tag { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; color: var(--bad); }
+  .hidden { display: none; }
+  .badge { display: inline-block; background: var(--border); color: var(--muted); border-radius: 6px; padding: 2px 8px; font-size: 0.75rem; margin-left: 8px; vertical-align: middle; }
+  .disclaimer { color: var(--muted); font-size: 0.75rem; margin-top: 28px; text-align: center; }
+  .option, .toolbar button, .nav button { -webkit-tap-highlight-color: transparent; }
+
+  @media (max-width: 600px) {
+    body { padding: 16px 10px; }
+    h1 { font-size: 1.2rem; }
+    .subtitle { font-size: 0.8rem; margin-bottom: 16px; }
+    .toolbar { flex-direction: column; }
+    .toolbar select, .toolbar button { width: 100%; padding: 12px 14px; font-size: 1rem; }
+    .card { padding: 16px; border-radius: 12px; }
+    .qtext { font-size: 1rem; }
+    .option { padding: 14px; min-height: 44px; font-size: 0.95rem; }
+    .feedback { font-size: 0.9rem; line-height: 1.5; }
+    .nav button { flex: 1; padding: 14px 10px; font-size: 1rem; min-height: 48px; }
+    .nav .right { flex: 2; }
+    .progress { font-size: 0.75rem; }
+    .summary { padding: 24px 12px; }
+    .summary .score { font-size: 1.8rem; }
+    .review-item { padding: 12px; font-size: 0.9rem; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>Cortex XSIAM Engineer Practice Exam</h1>
+  <div class="subtitle">Practice question engine &middot; <span id="totalCount">0</span> questions loaded</div>
+
+  <div id="setup" class="toolbar">
+    <select id="modeSelect"></select>
+    <button id="startBtn" class="primary">Start</button>
+    <button id="fullscreenBtn" class="hidden">Go fullscreen</button>
+  </div>
+
+  <div id="quizArea" class="hidden">
+    <div class="progress">
+      <span id="qPosition"></span>
+      <span id="liveScore"></span>
+    </div>
+    <div class="bar"><div id="barFill" class="bar-fill"></div></div>
+
+    <div class="card">
+      <img id="qimg" class="qimg hidden" alt="Question figure">
+      <div id="qtext" class="qtext"></div>
+      <div id="options" class="options"></div>
+      <div id="feedback" class="feedback"></div>
+    </div>
+
+    <div class="nav">
+      <button id="restartBtn">Restart</button>
+      <div class="right">
+        <button id="submitBtn" class="submit hidden" disabled>Submit</button>
+        <button id="nextBtn" class="next" disabled>Next</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="summary" class="summary hidden"></div>
+
+  <div class="disclaimer">Unofficial study aid. Not affiliated with or endorsed by Palo Alto Networks.</div>
+</div>
+
+<script>
+const QUESTIONS = [
+{
+"n": 1,
+"q": "How will Cortex XSIAM help with raw log ingestion from third-party sources in an existing infrastructure?",
+"options": [
+"Any structured logs coming into it are left completely unchanged, and only metadata is added to the raw data.",
+"For structured logs, like CEF, LEEF, and JSON, it decouples the key-value pairs and saves them in table format.",
+"Any unstructured logs coming into it are left completely unchanged, and metadata is not added to the raw data.",
+"For unstructured logs, it decouples the key-value pairs and saves them in a table format."
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 2,
+"q": "In which two locations can correlation rules be monitored for errors? (Choose two.)",
+"options": [
+"XDR Collector audit logs (type = Rules, subtype = Error)",
+"correlations_auditing dataset through XQL",
+"Management audit logs (type = Rules, subtype = Error)",
+"Alerts table as a health alert"
+],
+"correct": [
+0,
+1
+],
+"set": "exam"
+},
+{
+"n": 3,
+"q": "Which option should be used when customizing a dashboard in Cortex XSIAM to include a widget that will display data filtered by more than one dynamic value?",
+"options": [
+"Free text/number",
+"Multi-select",
+"Fixed filter",
+"Single-select"
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 4,
+"q": "How must Cloud Identity Engine be deployed and activated on Cortex XSIAM?",
+"options": [
+"In a different region than Cortex XSIAM; logs can be verified using pan_dss_raw dataset",
+"In a different region than Cortex XSIAM; logs can be verified using endpoints dataset",
+"In the same region as Cortex XSIAM; logs can be verified using pan_dss_raw dataset",
+"In the same region as Cortex XSIAM; logs can be verified using endpoints dataset"
+],
+"correct": [
+2
+],
+"set": "exam"
+},
+{
+"n": 5,
+"q": "Which common issue can result in sudden data ingestion loss for a data source that was previously successful?",
+"options": [
+"Data source is using an unsupported data format",
+"Data source has reached its maximum storage capacity",
+"Data source has reached its end of life for support",
+"API key used for the integration has expired"
+],
+"correct": [
+3
+],
+"set": "exam"
+},
+{
+"n": 6,
+"q": "While using the remote repository on a Development XSIAM tenant, which two objects can be pushed or pulled to the remote repository? (Choose two.)",
+"options": [
+"Scripts",
+"Parsing rules",
+"Lists",
+"Layouts"
+],
+"correct": [
+0,
+2
+],
+"set": "exam"
+},
+{
+"n": 7,
+"q": "When a Cortex XSIAM playbook execution reaches a breakpoint on a non-manual task, which two actions will allow the playbook to continue? (Choose two.)",
+"options": [
+"Disable the breakpoint and rerun the playbook from the start",
+"Skip the task with the breakpoint to let the playbook proceed automatically",
+"Wait for all parallel tasks to be completed before the breakpoint task resumes automatically",
+"Click Run Script Now or Complete Manually"
+],
+"correct": [
+1,
+3
+],
+"set": "exam"
+},
+{
+"n": 8,
+"q": "What is the purpose of using rolling tokens to manage Cortex XDR agents?",
+"options": [
+"To periodically rotate encryption keys used for tenant communication",
+"To perform administration on agents without requiring static credentials",
+"To authorize agents to download and install content updates",
+"To temporarily disable the agents during maintenance windows"
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 9,
+"q": "Based on the image below, which statement applies to the ability to remove tabs when creating a new alert layout?",
+"img": "data:image/webp;base64,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",
+"options": [
+"Only \"Alert Info\" tab can be removed",
+"Only \"Alert Info\" and \"War Room\" tabs can be removed",
+"Only \"War Room\" and \"Work Plan\" tabs can be removed",
+"Only \"Work Plan\" tab can be removed"
+],
+"correct": [
+3
+],
+"set": "exam"
+},
+{
+"n": 10,
+"q": "A Cortex XSIAM engineer is developing a playbook that uses reputation commands such as '!ip' to enrich and analyze indicators.\n\nWhich statement applies to the use of reputation commands in this scenario?",
+"options": [
+"If no reputation integration instance is configured, the '!ip' command will execute but will return no results",
+"Reputation commands such as '!ip' will fail if the required reputation integration instance is not configured and enabled",
+"The mapping flow for enrichment commands is disabled if extraction is set to \"None.\"",
+"Enrichment data will not be saved to the indicator unless the extraction setting is manually configured in the playbook task"
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 11,
+"q": "An engineer wants to onboard data from a third-party vendor’s firewall. There is no content pack available for it, so the engineer creates custom data source integration and parsing rules to generate a dataset with the firewall data.\n\nHow can the analytics capabilities of Cortex XSIAM be used on the data?",
+"options": [
+"Create a behavioral indicator of compromise (BIOC) rule on the network fields (source IP, source port, target IP, target port, IP protocol).",
+"Create a data model rule with network fields mapped (source IP, source port, target IP, target port, IP protocol).",
+"Create a correlation rule on the network fields (source IP, source port, target IP, target port, IP protocol).",
+"Create a parsing rule and ensure the network fields exist (source IP, source port, target IP, target port, IP protocol)."
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 12,
+"q": "Which two requirements must be met for a Cortex XDR agent to successfully use the Broker VM as a download source for content updates? (Choose two.)",
+"options": [
+"Device Configuration profile applied to the XDR agent must specify the Broker VM as a Download Source",
+"Agent Settings profile applied to the XDR agent must specify the Broker VM as a Download Source",
+"Broker VM must be configured with an FQDN",
+"XDR agent must authenticate to the Broker VM using a machine certificate"
+],
+"correct": [
+1,
+2
+],
+"set": "exam"
+},
+{
+"n": 13,
+"q": "During a new Cortex XSIAM deployment, a user consistently experiences timeout sessions while trying to connect to the agent through Live Terminal, even though all traffic is allowed.\n\nWhat could be causing these persistent timeout issues?",
+"options": [
+"User does not have administrative privileges on the managed endpoint",
+"SSL Decryption is currently being used to inspect the underlying traffic",
+"NTP is not synchronized with the server time",
+"Live Terminal feature is not supported on the current OS"
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 14,
+"q": "What should be considered when creating a custom incident domain?",
+"options": [
+"Alert grouping will not apply, but SmartScore will",
+"Alert grouping will apply, but SmartScore will not",
+"Alert grouping and SmartScore will not be applied to incidents",
+"Alert grouping and SmartScore will be applied to incidents"
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 15,
+"q": "How does Cortex XSIAM manage licensing for Kubernetes environments?",
+"options": [
+"Managed per namespace and returned when the namespace is decommissioned",
+"Issued per container and returned upon container termination",
+"Issued for each node and returned when the agent is removed or the node is deleted",
+"Applied per service deployment and returned upon service deactivation"
+],
+"correct": [
+2
+],
+"set": "exam"
+},
+{
+"n": 16,
+"q": "A Cortex XSIAM engineer is preparing to install a new content pack and notices that there are several optional content packs associated with the main one that needs to be installed.\n\nWhat must the engineer take into consideration when deciding whether or not to install the optional content packs?",
+"options": [
+"Mandatory dependencies required by the optional content packs are automatically included during installation. The engineer should consider the additional functionality and potential impact on system performance.",
+"The optional content packs without their associated dependencies are installed first, and then the main content pack installation is triggered. The engineer should ensure that the optional content packs do not conflict with existing configurations.",
+"Optional content packs are installed without any dependencies, as they are not necessary. The engineer should only install them if they require the additional features.",
+"Only the selected optional content packs are installed, without including any additional dependencies. The engineer should manually check for any required dependencies."
+],
+"correct": [
+0
+],
+"set": "exam"
+},
+{
+"n": 17,
+"q": "In the Incident War Room, which command is used to update incident fields identified in the incident layout?",
+"options": [
+"!setIncidentFields",
+"!setParentIncidentFields",
+"!setParentIncidentContext",
+"!updateParentIncidentFields"
+],
+"correct": [
+0
+],
+"set": "exam"
+},
+{
+"n": 18,
+"q": "Which command will display context data as a table when troubleshooting a playbook task?\n\n```\nContext Data:\ncustom_fields:\n  incidentassignment:\n    runStatus: \"running\"\n    startDate: \"2025-01-08 18:44:12\"\n\nTable:\nrunStatus   running  \nstartDate   2025-01-08 18:44:12\n```",
+"options": [
+"!ConvertTableToHTML table=${parentIncidentFields.custom_fields}",
+"!JsonToTable value=${parentIncidentFields.custom_fields}",
+"!ToTable data=${parentIncidentFields.custom_fields.incidentassignment}",
+"!ExtractHTMLTables html=${parentIncidentFields.custom_fields.incidentassignment}"
+],
+"correct": [
+2
+],
+"set": "exam"
+},
+{
+"n": 19,
+"q": "What is the role of \"in\" in the query below?\n\n```\naction_local_port in (1122, 2234)\n```",
+"options": [
+"Operand",
+"Operator",
+"Function",
+"Range"
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 20,
+"q": "Which section of a parsing rule defines the newly created dataset?",
+"options": [
+"RULE",
+"COLLECT",
+"INGEST",
+"CONST"
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 21,
+"q": "Which step must be taken to enable Cloud Identity Engine on Cortex XSIAM?",
+"options": [
+"Enable SSO integration",
+"Activate it in the Customer Support Portal",
+"Activate it on HUB",
+"Enable Active Directory log collection."
+],
+"correct": [
+2
+],
+"set": "exam"
+},
+{
+"n": 22,
+"q": "A vulnerability analyst asks a Cortex XSIAM engineer to identify assets vulnerable to a zero-day CVE affecting \"ai_app\" versions 12.1, 12.2, 12.4, and 12.5.\n\nWhich XQL query will provide the required result?",
+"options": [
+"```\ndataset = va_cves\n| filter affected_products contains \"ai_app\"\n| fields affected_hosts, affected_products\n```",
+"```\ndataset = xdr_data\n| filter event_type = ENUM.PROCESS\n| filter action_process_image_name = \"ai_app\"\n| filter action_process_file_info not in (\"12.1\", \"12.2\", \"12.4\", \"12.5\")\n```",
+"```\npreset = host_inventory_applications\n| filter application_name contains \"ai_app\" and version in (\"12.1\", \"12.2\", \"12.4\", \"12.5\")\n```",
+"```\ndataset = host_inventory\n| filter applicationName contains \"ai_app\"\n| filter applicationVersion not in (\"12.1\", \"12.2\", \"12.4\", \"12.5\")\n```"
+],
+"correct": [
+2
+],
+"set": "exam"
+},
+{
+"n": 23,
+"q": "When Cortex XDR agents are on servers in a zone with no internet access, which configuration will keep them communicating with the platform?",
+"options": [
+"Logging service in the isolated zone",
+"Broker VM",
+"Integration using filebeat",
+"Engine"
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 24,
+"q": "Which installer type should be used when upgrading a non-Linux Kubernetes cluster?",
+"options": [
+"Standalone",
+"Helm",
+"Upgrade from ESM",
+"Kubernetes"
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 25,
+"q": "A systems engineer overseeing the integration of data from various sources through data pipelines into Cortex XSIAM notices modifications occurring during the ingestion process, and these modifications reduce the accuracy of threat detection and response. The engineer needs to assess the risks associated with the pre-ingestion data modifications and develop effective solutions for data integrity and system efficacy.\n\nWhich set of steps must be followed to meet these goals?",
+"options": [
+"Develop an advanced monitoring system to track and log all changes made to data during ingestion, and use analytics to compare pre- and post-ingestion states based on XDM to identify and mitigate discrepancies.",
+"Design a hybrid approach for critical data fields to be safeguarded against modifications during ingestion, while less critical data fields undergo allowable modifications that are rectified post-ingestion by using XDM to balance performance with data integrity.",
+"Implement a pre-ingestion data validation process that aligns with the post-ingestion standards set by XDM, ensuring data consistency and integrity before it enters Cortex XSIAM.",
+"Establish a process to minimize data modifications during ingestion, prioritizing raw data capture and using XDM post-ingestion for necessary transformations and integrity checks."
+],
+"correct": [
+3
+],
+"set": "exam"
+},
+{
+"n": 26,
+"q": "A security engineer notices that in the past week ingestion has spiked significantly. Upon investigating the anomaly, it is determined that a custom application developed in-house caused the spike. The custom application is sending syslog to the Broker VM Syslog Collector applet. The engineer consults with the SOC analyst, who determines that 90% of the logs from the custom application are not used.\n\nWhat can the engineer configure to reduce the ingestion?",
+"options": [
+"Parsing rule to drop the unnecessary data at the Broker VM",
+"Data model rule to drop the unnecessary data",
+"Correlation rule on the Cortex XSIAM server to drop the unnecessary data",
+"Data model rule to map the useful data"
+],
+"correct": [
+0
+],
+"set": "exam"
+},
+{
+"n": 27,
+"q": "An engineer is conducting a threat actor emulated test to determine which Cortex XDR module would provide protection or alert on a real-world attack. The first test was prevented.\n\nWhich action must the engineer take to enable continued testing?",
+"options": [
+"Remove the hash from the restrictions profile",
+"Add an indicator exclusion",
+"Add a prevention rule",
+"Change the profile from \"alert\" to \"prevent\" for the BTP module."
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 28,
+"q": "A Cortex XSIAM engineer adds a disable injection and prevention rule for a specific running process. After an hour, the engineer disables the rule to reinstate the security capabilities, but the capabilities are not applied.\n\nWhat is the explanation for this behavior?",
+"options": [
+"The engineer needs to restart the process to get back the security capabilities.",
+"The engineer needs a support exception to get back the security capabilities.",
+"The engineer needs to wait for the time period configured in the rule to pass first.",
+"The engineer can disable the rule, but security capabilities are not applied to the process."
+],
+"correct": [
+0
+],
+"set": "exam"
+},
+{
+"n": 29,
+"q": "What is the function of the \"MODEL\" section in a data model rule?",
+"options": [
+"To make a list of all the relevant fields to be mapped from the logs to XDM",
+"To define the mapping between a single dataset and XDM",
+"To finalize rule definition with all XQL statements",
+"To map log fields to corresponding Cortex XSIAM Data Model (XDM) fields"
+],
+"correct": [
+3
+],
+"set": "exam"
+},
+{
+"n": 30,
+"q": "What is the primary benefit of setting the \"--memory-swap\" option to \"-1\" during Cortex XSIAM engine deployment?",
+"options": [
+"It enhances the network throughput by optimizing memory usage.",
+"It increases the total disk space available to the engine.",
+"It allows the engine to operate without requiring swap capabilities.",
+"It automatically doubles the available RAM to the engine."
+],
+"correct": [
+2
+],
+"set": "exam"
+},
+{
+"n": 31,
+"q": "A CISO has asked an engineer to create a custom dashboard in Cortex XSIAM that can be filtered to show incidents assigned to a specific user.\n\nWhich feature should be used to filter the incident data in the dashboard?",
+"options": [
+"Filters and inputs in the custom dashboard",
+"Report template to set the incident user filter",
+"Visualization filter options in the widget configuration",
+"Incident summary view to filter by user"
+],
+"correct": [
+0
+],
+"set": "exam"
+},
+{
+"n": 32,
+"q": "How can a Cortex XSIAM engineer resolve the issue when a SOC analyst escalates missing details after merging two similar incidents?",
+"options": [
+"Check the War Room of the destination incident.",
+"Examine the incident context of the source incident.",
+"Unmerge the incidents and copy the missing details into the incident notes.",
+"Check the child incident of the destination incident."
+],
+"correct": [
+0
+],
+"set": "exam"
+},
+{
+"n": 33,
+"q": "Which cytool command will look up the policy being applied to a Cortex XDR agent?",
+"options": [
+"cytool adaptive_policy interval 0",
+"cytool payload_execution query",
+"cytool adaptive_policy recalc",
+"cytool persist print agent_settings.db"
+],
+"correct": [
+2
+],
+"set": "exam"
+},
+{
+"n": 34,
+"q": "A file for a support exception that needs to be updated locally on a Linux endpoint has been supplied.\n\nWhich cytool command will upload this support exception file to the endpoint?",
+"options": [
+"cytool upload suexfile -target <\/local/file/path>",
+"cytool upload suex -file <\/local/file/path>",
+"cytool import suex -path <\/local/file/path>",
+"cytool import suexfile -path <\/local/file/path>"
+],
+"correct": [
+2
+],
+"set": "exam"
+},
+{
+"n": 35,
+"q": "Using the integrationContext object, how is data stored and retrieved between integration command runs in Cortex XSIAM?",
+"options": [
+"The integrationContex object can only store strings, not key-value dictionaries.",
+"The integrationContex object is retrieved and set using the test-module command.",
+"The get_integration_context() method overrides the existing object that is stored.",
+"The integrationContex object supports get_integration_context() and set_integration_context()."
+],
+"correct": [
+3
+],
+"set": "exam"
+},
+{
+"n": 36,
+"q": "Which content can be included in a Marketplace content pack?",
+"options": [
+"Integrations, playbooks, parsers, and server configuration keys",
+"Predefined dashboards, indicators, and reports",
+"Scripts, playbooks, integrations, and correlation rules",
+"Behavioral indicator of compromise (BIOC) rules, layouts, and custom dashboards"
+],
+"correct": [
+2
+],
+"set": "exam"
+},
+{
+"n": 37,
+"q": "Cortex XSIAM has not received any logs for 30 minutes from a Palo Alto Networks NGFW named \"MainFW\". An engineer wants to create an alert for this scenario.\n\nCorrelation rule settings include:\n• Time Schedule: Every 30 minutes -\n• Query Timeframe: 30 minutes -\n• Action: Generate alert -\n• Alert Name: No logs received from MainFW in the past 30 minutes\n\nWhich query should be used in the correlation rule?",
+"options": [
+"```\ndataset = collection_auditing\n| filter collector_type = \"NGFW\" and instance = \"MainFW\"\n| comp count_distinct(description) as total_events by instance\n| filter total_events = 0\n```",
+"```\npreset = metrics_view\n| filter _vendor = \"PANW\" and _product = \"NGFW\" and _reporting_device_name = \"MainFW\"\n| comp count_distinct(total_event_count) as total_events by _reporting_device_name\n| filter total_events = 0\n```",
+"```\ndataset = collection_auditing\n| filter collector_type = \"NGFW\" and instance = \"MainFW\"\n| comp values(description) as total_events by instance\n| filter total_events = 0\n```",
+"```\npreset = metrics_view\n| filter _vendor = \"PANW\" and _product = \"NGFW\" and _reporting_device_name = \"MainFW\"\n| comp sum(total_event_count) as total_events by _reporting_device_name\n| filter total_events = 0\n```"
+],
+"correct": [
+3
+],
+"set": "exam"
+},
+{
+"n": 38,
+"q": "A Cortex XSIAM engineer at a SOC downgrades a critical threat intelligence content pack from the Cortex Marketplace while performing routine maintenance. As a result, the SOC team loses access to the latest threat intelligence data.\n\nWhich action will restore the functionality of the content pack to its previously installed version?",
+"options": [
+"Contact Palo Alto Networks Support to create an exception to revert to the previously installed version.",
+"Back up the current configuration and data, then revert to the previously installed version.",
+"Remove all integrations and playbooks associated with the content pack, then revert to the previously installed version.",
+"Directly reinstall the previously installed version over the current one."
+],
+"correct": [
+3
+],
+"set": "exam"
+},
+{
+"n": 39,
+"q": "Which two alert notification options can be configured without creating a playbook? (Choose two.)",
+"options": [
+"Pager Duty",
+"Email",
+"Slack",
+"SMS"
+],
+"correct": [
+1,
+2
+],
+"set": "exam"
+},
+{
+"n": 40,
+"q": "An engineer needs to migrate Cortex XDR agents without internet connection from Cortex XSIAM tenant A to Cortex XSIAM tenant B. There is a broker configured for each tenant. This is the communication flow:\n\n- XDR agents <-> Broker A <-> XSIAM tenant A\n- XDR agents <-> Broker B <-> XSIAM tenant B\n\nWhich two steps should be taken before moving the agents? (Choose two.)",
+"options": [
+"Install a new Broker C on site B, and register it into Cortex XSIAM tenant A.",
+"Install a new Broker C on site and register it into Cortex XSIAM tenant B.",
+"Also register Broker A to Cortex XSIAM tenant B.",
+"Select all endpoints in the console and add a new Broker C as proxy."
+],
+"correct": [
+1,
+2
+],
+"set": "exam"
+},
+{
+"n": 41,
+"q": "Which field is automatically mapped from the dataset to the data model when creating a data model rule?",
+"options": [
+"_event_type",
+"_insert_time",
+"_host_name",
+"_cloud_id"
+],
+"correct": [
+0
+],
+"set": "exam"
+},
+{
+"n": 42,
+"q": "A Cortex XSIAM engineer plans to add Kafka and Syslog Collectors to a Broker VM cluster.\n\nWhat are two expected behaviors of the applets when they are added to the cluster? (Choose two.)",
+"options": [
+"Syslog Collector applet is automatically initiated, enters an active state on the primary node, and is on standby on the standby nodes.",
+"Kafka Collector applet is automatically initiated, enters an active state on the primary node, and is on standby on the standby nodes.",
+"Syslog Collector applet is active on all cluster nodes, including primary and standby.",
+"Kafka Collector applet is active on all cluster nodes, including primary and standby."
+],
+"correct": [
+0,
+3
+],
+"set": "exam"
+},
+{
+"n": 43,
+"q": "Based on the _raw_log and XQL query information below, what will be the result(s) of the temp_value?\n\n```\n_raw_log:\n2022-03-17 01:17:59.917290 source:149.235.219.208 port:51964 target:10.120.80.2 port:123 up:3706 down:503 duration:0 seconds\n2022-03-17 01:19:29.397424 source:123.34.149.235 port:59977 target:10.120.80.4 port:20 up:2217 down:3215 duration:0 seconds\n\nXQL query:\n| filter temp_value = (if(arrayindex(regextract(_raw_log, \"(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\"), 0) == \"149\\.235\", arrayindex(regextract(_raw_log, \"(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\sport:(\\d+))\"), 1), \"192.168.10.1\"))\n```",
+"options": [
+"123   192.168.10.1",
+"20",
+"10.120.80.2",
+"149.235.219.208   59977"
+],
+"correct": [
+0
+],
+"set": "exam"
+},
+{
+"n": 44,
+"q": "When activating the Cortex XSIAM tenant, how is the data at rest configured with AES 128 encryption?",
+"options": [
+"Under Advanced -> Encryption Method, choose the desired encryption method during the initial setup of the tenant.",
+"Under Advanced, choose \"BYOK,\" and adhere to the wizard's instructions as outlined in the encryption method section.",
+"Create encryption keys with AES 128 and upload it securely through Cortex Gateway.",
+"Under Advanced -> Encryption Method, choose the desired encryption method after the initial setup of the tenant."
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 45,
+"q": "A sub-playbook is configured to loop with a For Each Input. The following inputs are given to the sub-playbook:\n\nInput x: W,X,Y,Z -\nInput y: a,b,c,d -\nInput z: 9 -\n\nWhich inputs will be used for the second iteration of the loop?",
+"options": [
+"a,b,c,d",
+"X,b,9",
+"X,b",
+"X,b,c"
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 46,
+"q": "The following string is a value of a key named \"Data2\" in the context:\n\n```\n{\"@admin\":\"admin\",\"@dirtyld\":\"1\",\"@loc\":\"Lab\",\"@name\":\"default1\",\"@oldname\":\"Test\",\"@time\":\"2024/08/28 07:45:15\",\"alert\":{\"@admin\":\"admin\",\"@dirtyld\":\"2\",\"@time\":\"2024/08/28 07:45:15\",\"member\":{\"#text\":\"\n```\n\nBased on the image below, what will be displayed in the \"Test result\" field when the \"Test\" button is pressed?",
+"img": "data:image/webp;base64,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",
+"options": [
+"1",
+"\"1\"",
+"2",
+"\"2\""
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 47,
+"q": "A Cortex XDR agent is installed on an endpoint, but the agent is unable to download content updates and has not registered with the Cortex XSIAM server. An engineer troubleshoots the network connection and determines that, by design, this endpoint does not have direct internet access to the required network destinations for the Cortex XDR agent traffic.\n\nA Broker VM that has the local agent settings applet enabled with Agent Proxy configured is reachable by the endpoint. The Broker VM details are as follows:\n\nFQDN: crtxbroker01.company.net -\n\nProxy listening port: 8888 -\n\nHow should the engineer configure the Cortex XDR agent to use the existing Broker VM as a proxy for the agent network traffic?",
+"options": [
+"cytool proxy set \"crtxbroker01. company.net: 8888\"",
+"cytool config proxy --host crtxbroker01.company.net --port 8888",
+"cytool set proxy --host crtxbroker01.company.net --port 8888",
+"cytool proxy config \"crtxbroker01.company.net:8888\""
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 48,
+"q": "A Behavioral Threat Protection (BTP) alert is triggered with an action of \"Prevented (Blocked)\" on one of several application servers running Windows Server 2022. The investigation determines the involved processes to be legitimate core OS binaries, and the description from the triggered BTP rule is an acceptable risk for the company to allow the same activity in the future.\n\nThis type of activity is only expected on the endpoints that are members of the endpoint group \"AppServers,\" which already has a separate prevention policy rule with an exceptions profile named \"Exceptions-AppServers\" and a malware profile named \"Malware-AppServers.\"\n\nThe CGO that was terminated has the following properties:\n\nSHA256: eb71ea69dd19f728ab9240565e8c7efb59821e19e3788e289301e1e74940c208File path: C:\\Windows\\System32\\cmd.exeDigital Signer: Microsoft CorporationHow should the exception be created so that it is scoped as narrowly as possible to minimize the security gap?",
+"options": [
+"```\nCreate the exception via the alert itself Selecting the:\n  • CGO hash\n  • CGO signer\n  • CGO process path\n  • Applying the scope to the \"Exceptions-AppServers\" profile. \n```",
+"```\nCreate Disable Prevention Rule in Exceptions Configuration with the following sections:\n  • Platform: Windows\n  • Target Properties: SHA256, File path, Microsoft Corporation\n  • Module: Behavioral Threat Protection\n  • Scope: Exceptions-AppServers\n```",
+"```\nCreate a Legacy Agent Exception via Exceptions Configuration with the following selections:\n  • Platform: Windows\n  • Target Properties: C:\\Windows\\System32\\cmd.exe\n  • Module: Behavioral Threat Protection\n  • Profiles: Malware-AppServers\n```",
+"```\nCreate the exception via the alert itself selecting the:\n  • CGO hash\n  • CGO signer\n  • CGO process path\n  • Applying the scope to \"Global\"\n```"
+],
+"correct": [
+1
+],
+"set": "exam"
+},
+{
+"n": 49,
+"q": "Which action will prevent the automatic extraction of indicators such as IP addresses and URLs from a script's output?",
+"options": [
+"Add 'ExtractIndicators': False to the script.",
+"Add 'IgnoreAutoExtract': True to the script.",
+"Use 'AutoExtract': False in the script.",
+"Set 'IndicatorExtraction': None in the script."
+],
+"correct": [
+2
+],
+"set": "exam"
+},
+{
+"n": 50,
+"q": "An application which ingests custom application logs is hosted in an on-premises virtual environment on an Ubuntu server, and it logs locally to a .csv file.\n\nWhich set of actions will allow the ingestion of the .csv logs into Cortex XSIAM directly from the server?",
+"options": [
+"Install a Broker VM in the environment, and configure the CSV Collector to collect the files of interest.",
+"Install a Cortex XDR agent on the Ubuntu server, and configure the agent to collect the files of interest.",
+"Install a Broker VM in the environment, and migrate the application to the Broker VM.",
+"Install XDR Collector on the Ubuntu server, and configure the agent to collect the files of interest."
+],
+"correct": [
+0
+],
+"set": "exam"
+},
+{
+"n": 51,
+"q": "Which action is required to enable use of a custom script in an alert layout?",
+"options": [
+"Tag the script with \"dynamic-section,\" add a general purpose dynamic section, and edit the section settings to add the automation script.",
+"Tag the script with \"general-purpose-dynamic-section,\" add a custom script section, and edit the section settings to add the automation script.",
+"Add a general purpose dynamic section and edit the section settings to add the automation script.",
+"Tag the script with \"general-purpose-dynamic-section,\" add a general purpose dynamic section, and edit the section settings to add the automation script."
+],
+"correct": [
+3
+],
+"set": "exam"
+},
+{
+"n": 52,
+"q": "What is the reason all Broker VM options are greyed out when a user attempts to select a Broker VM as a download source in the Agent Settings profile?",
+"options": [
+"The Broker VM is offline.",
+"NTP is not synchronized properly on the Broker VM.",
+"Local Agent Setting applet is currently activated without SSL certificate.",
+"Local Agent Setting applet is currently activated without FQDN."
+],
+"correct": [
+3
+],
+"set": "exam"
+},
+{
+"n": 53,
+"q": "What is a key characteristic of a parsing rule in Cortex XSIAM?",
+"options": [
+"It uses regular expressions exclusively for data modifications, discards unmatched logs by default, and only retains fields with non-null values.",
+"It is bound to all vendors and products, performs data parsing once per log, and does not allow grouping.",
+"It is bound to a specific vendor and product, performs data parsing once per log, and does not allow grouping.",
+"It is bound to a specific vendor and product which allow grouping with a no-match policy, and retains all fields."
+],
+"correct": [
+2
+],
+"set": "exam"
+},
+{
+"n": 54,
+"q": "Which type of parsing error is categorized in the dataset \"parsing_rules_errors\"?",
+"options": [
+"Compilation",
+"Unrecognized code",
+"Invalid syntax",
+"Data mismatch"
+],
+"correct": [
+0
+],
+"set": "exam"
+},
+{
+"n": 55,
+"q": "Before initiating a malware scan action on a Linux workstation, an engineer notices that the **operational status** of the Cortex XDR agent's operational status on the workstation is reporting as \"partially protected.\" There have been no configuration changes made from the Cortex XSIAM server.\n\nWhat are two explanations for this operational status? (Choose two.)",
+"options": [
+"The Linux endpoint is currently running 4.0 kernel version.",
+"The Linux endpoint's kernel modules failed to load due to unsupported kernel versions.",
+"The agent is outdated and requires an upgrade to the latest version to regain full protection.",
+"The agent was manually disabled on the endpoint by the user or an administrator."
+],
+"correct": [
+1,
+2
+],
+"set": "exam"
+},
+{
+"n": 56,
+"q": "A Cortex XSIAM engineer is implementing role-based access control (RBAC) and scope-based access control (SBAC) for users accessing the Cortex XSIAM tenant with the following requirements:\n\n- Users managing machines in Europe should be able to manage and control all endpoints and installations, create profiles and policies, view alerts, and initiate Live Terminal, but only for endpoints in the Europe region.\n\n- Users managing machines in Europe should not be able to create, modify, or delete new or existing user roles.\n\nThe Europe region endpoints are identified by both of the following:\n\n* Endpoint Tag = \"Europe-Servers\" and Endpoint Group = \"Europe\" for servers in Europe\n* Endpoint Group = \"Europe\" and Endpoint Tag = \"Europe-Workstation\" for workstations in Europe\n\nWhich two sets of implementation actions should the engineer take? (Choose two.)",
+"options": [
+"Verify and confirm that SBAC mode under \"Server Settings\" is set to \"Restrictive,\" and assign \"EG:Europe\" under the user permission scope configuration.",
+"Use the pre-defined roles, assign the \"Instance Administrator\" role to the user or user group managing Europe-based endpoints.",
+"Verify and confirm that SBAC mode under \"Server Settings\" is set to \"Permissive,\" and assign \"EG:Europe\" under the user permission scope configuration.",
+"Use the pre-defined roles, assign the \"Privileged IT Admin\" role to the user or user group managing Europe-based endpoints."
+],
+"correct": [
+0,
+3
+],
+"set": "exam"
+},
+{
+"n": 57,
+"q": "Administrators from Building 3 have been added to Cortex XSIAM to perform limited functions on a subset of endpoints. Custom roles have been created and applied to the administrators to limit their permissions, but their access should also be constrained through the principle of least privilege according to the endpoints they are allowed to manage. All endpoints are part of an endpoint group named \"Building3,\" and some endpoints may also be members of other endpoint groups.\n\nWhich technical control will restrict the ability of the administrators to manage endpoints outside of their area of responsibility, while maintaining visibility to Building 3's endpoints?",
+"options": [
+"SBAC enabled in Building 3's IP range with the \"EG:Building3\" tag assigned to each administrator's scope",
+"SBAC enabled in Permissive Mode with the \"EG:Building3\" tag assigned to each administrator's scope",
+"SBAC enabled in Restrictive Mode with the \"EG:Building3\" tag assigned to each administrator's scope",
+"SBAC enabled globally with the \"EG:Building3\" tag assigned to each administrator's scope"
+],
+"correct": [
+2
+],
+"set": "exam"
+},
+{
+"n": 58,
+"q": "While using the playbook debugger, an engineer attaches the context of an alert as test data.\n\nWhat happens with respect to the interactions with the list objects via tasks in this scenario?",
+"options": [
+"The original content of the list and the original context are not altered, because Cortex XSIAM is running inside debug mode.",
+"The original content of the list is not altered, but the original context is, because XSIAM commands are running within debug mode.",
+"The original content of the list is altered, but the original context is not, because Cortex XSIAM commands interact directly with the original list objects within debug mode.",
+"The original content of the list and the original context are altered, because Cortex XSIAM tasks interact directly with the objects, even within debug mode."
+],
+"correct": [
+0
+],
+"set": "exam"
+},
+{
+"n": 59,
+"q": "What is the primary function of the URL \"https://<region>-docker.pkg.dev\" in the context of a Palo Alto Networks infrastructure?",
+"options": [
+"It downloads Docker content updates.",
+"It downloads Kubernetes images for agent installation.",
+"It imports Docker licensing.",
+"It downloads Engine Docker containers."
+],
+"correct": [
+3
+],
+"set": "exam"
+},
+{
+"n": 60,
+"q": "What is the dashboard option found in the drop-down menu directly after under Agent Management?",
+"options": [
+"API Security Management",
+"AI Security",
+"Asset Inventory",
+"ASM"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 61,
+"q": "In XSIAM version 3.3, the Issues and Insights tab is found between the Key Assets & Artifacts and Timeline tabs?",
+"options": [
+"True",
+"False"
+],
+"correct": [
+0
+],
+"set": "study"
+},
+{
+"n": 62,
+"q": "Where in the NGFW UI can you confirm that cloud logging is enabled?",
+"options": [
+"Objects > Log Forwarding > Cloud Logging is checked",
+"Device > Management > Cloud Logging > Enabled Cloud Logging is checked",
+"Monitor > Logs > Cloud Logging status is displayed",
+"Network > Interfaces > Logging is enabled per interface"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 63,
+"q": "Why is the Default Log Forwarding Profile set to log all types to the cloud?",
+"options": [
+"To reduce storage usage on the firewall by minimizing local logs",
+"To ensure maximum visibility for monitoring, analytics, and threat detection",
+"To meet compliance requirements across all regulatory frameworks",
+"To improve firewall performance by offloading all logging processes"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 64,
+"q": "What is the primary purpose of endpoint control?",
+"options": [
+"Increase network bandwidth",
+"Secure endpoints to protect data and prevent threats",
+"Replace firewalls",
+"Manage cloud infrastructure"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 65,
+"q": "Why are endpoints considered critical for data access?",
+"options": [
+"They store backups only",
+"They provide access to sensitive data",
+"They replace databases",
+"They encrypt all traffic automatically"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 66,
+"q": "What makes endpoints a common target for attackers?",
+"options": [
+"They are always offline",
+"They have unlimited storage",
+"They are common threat entry points for malware and ransomware",
+"They block all traffic by default"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 67,
+"q": "How does endpoint control support compliance?",
+"options": [
+"By increasing CPU usage",
+"By encrypting only emails",
+"By meeting industry requirements for data protection and privacy",
+"By disabling user access"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 68,
+"q": "What is a key benefit of endpoint control for users?",
+"options": [
+"Slower system performance",
+"Preventing all internet usage",
+"Protecting users from threats and reducing disruptions",
+"Eliminating authentication"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 69,
+"q": "When an endpoint is deleted from Cortex XSIAM, how long is the endpoint's data retained?",
+"options": [
+"7 days",
+"30 days",
+"90 days",
+"180 days"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 70,
+"q": "Which type of data is typically retained for 180 days in Cortex XSIAM?",
+"options": [
+"Endpoint inventory data after deletion",
+"Agent heartbeat and connectivity logs",
+"Alerts, incidents, and investigation data",
+"Raw endpoint telemetry after uninstall"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 71,
+"q": "An engineer uninstalls the Cortex XDR agent from an endpoint. What happens to the endpoint data?",
+"options": [
+"All data is immediately deleted",
+"Data is retained for 180 days",
+"Data is retained for 7 days",
+"Data is permanently archived"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 72,
+"q": "Which statement correctly describes data retention behavior in Cortex XSIAM?",
+"options": [
+"Endpoint deletion and incident data both retain data for 180 days",
+"Endpoint deletion retains data for 90 days, while incident data is retained longer",
+"All data types are retained for the same duration",
+"Endpoint data is deleted immediately upon agent uninstall"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 73,
+"q": "A SOC analyst deletes an endpoint but needs to investigate alerts generated by that endpoint. What should they expect?",
+"options": [
+"Both endpoint data and alerts are deleted immediately",
+"Endpoint data is deleted, but alerts remain available",
+"Endpoint data remains indefinitely",
+"Alerts are deleted after 7 days"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 74,
+"q": "Which feature enables administrative actions on Cortex XDR agents without requiring static credentials?",
+"options": [
+"Endpoint Tags",
+"Agent Tokens",
+"Support File Passwords",
+"Endpoint Groups"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 75,
+"q": "Which feature is primarily used to organize endpoints for policy and action assignment?",
+"options": [
+"Agent Tokens",
+"Support File Passwords",
+"Endpoint Tags",
+"Rolling Tokens"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 76,
+"q": "What is the primary purpose of rolling agent tokens?",
+"options": [
+"Encrypt support files for secure transfer",
+"Replace passwords for secure administrative execution",
+"Assign endpoints to dynamic groups",
+"Enable log collection from endpoints"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 77,
+"q": "Which feature ensures that support files retrieved from endpoints can be securely accessed and decrypted?",
+"options": [
+"Endpoint Tags",
+"Agent Tokens",
+"Support File Passwords",
+"Rolling Tokens"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 78,
+"q": "Which TWO features are directly related to secure operations? (Choose two)",
+"options": [
+"Endpoint Tags",
+"Agent Tokens",
+"Support File Passwords",
+"Endpoint Groups"
+],
+"correct": [
+1,
+2
+],
+"set": "study"
+},
+{
+"n": 79,
+"q": "Which statement BEST describes agent tokens?",
+"options": [
+"They are used to encrypt endpoint data at rest",
+"They enable secure administrative operations without passwords",
+"They classify endpoints into logical groups",
+"They provide access to support files"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 80,
+"q": "Which feature allows endpoints to be automatically grouped and managed for policy enforcement at the time of agent deployment?",
+"options": [
+"Endpoint Tags",
+"Agent Tokens",
+"Support File Passwords",
+"Rolling Tokens"
+],
+"correct": [
+0
+],
+"set": "study"
+},
+{
+"n": 81,
+"q": "Which feature enables dynamic segmentation of endpoints to streamline policy assignment and action execution?",
+"options": [
+"Support File Passwords",
+"Endpoint Tags",
+"Agent Tokens",
+"Temporary Tokens"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 82,
+"q": "Which menu path is used to assign endpoint tags to an endpoint from the console?",
+"options": [
+"Security Operations → Assign Tags",
+"Endpoint Data → Assign Endpoint Tags",
+"Endpoint Control → Assign Endpoint Tags",
+"Endpoint Groups → Add Tags"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 83,
+"q": "Which action allows an engineer to apply tags to a selected endpoint directly from the All Endpoints view?",
+"options": [
+"Edit endpoint properties",
+"Assign Endpoint Tags from the Endpoint Control menu",
+"Create a new endpoint group",
+"Restart the agent"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 84,
+"q": "Which type of agent token is automatically generated at regular intervals to maintain continuous access?",
+"options": [
+"Temporary Tokens",
+"Rolling Tokens",
+"Static Tokens",
+"Manual Tokens"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 85,
+"q": "Which type of agent token is manually created and valid only for a limited duration (up to 21 days)?",
+"options": [
+"Rolling Tokens",
+"Permanent Tokens",
+"Temporary Tokens",
+"Session Tokens"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 86,
+"q": "Which is the maximum duration for which a temporary agent token can be configured?",
+"options": [
+"7 days",
+"14 days",
+"21 days",
+"30 days"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 87,
+"q": "Which statement correctly describes access to a retrieved Tech Support File (TSF)?",
+"options": [
+"TSF files can be opened directly after download",
+"TSF files require a password derived from a token in the metadata file",
+"TSF files are decrypted automatically by the console",
+"TSF files use the endpoint hostname as the password"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 88,
+"q": "An engineer retrieves a support file from an endpoint but cannot open it. What is the MOST likely reason?",
+"options": [
+"The file was not generated from the Action Center",
+"The file requires a password derived from the token in the metadata",
+"The endpoint was disconnected during retrieval",
+"The file must be converted to JSON before opening"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 89,
+"q": "Which workflow is required to retrieve a support file directly from an endpoint via the console?",
+"options": [
+"Security Operations → Retrieve Support File",
+"Endpoint Data → Export Logs",
+"Endpoint Control → Retrieve Support File",
+"Action Center → Generate Token"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 90,
+"q": "Which TWO locations can be used to retrieve a support file password? (Choose two)",
+"options": [
+"Inventory → Endpoints → All Endpoints",
+"Action Center → All Actions",
+"Security Operations → Incidents",
+"Endpoint Data → Logs"
+],
+"correct": [
+0,
+1
+],
+"set": "study"
+},
+{
+"n": 91,
+"q": "Which statement BEST describes dynamic endpoint groups?",
+"options": [
+"They require manual assignment of endpoints",
+"They are populated based on predefined criteria and update automatically",
+"They are based only on static attributes like department",
+"They cannot be modified after creation"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 92,
+"q": "An engineer wants to group endpoints based on operating system, IP address, and agent version. Which group type should be used?",
+"options": [
+"Static group",
+"Manual group",
+"Dynamic group",
+"Policy group"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 93,
+"q": "Which of the following attributes can be used to define a dynamic endpoint group?",
+"options": [
+"Department and location only",
+"Tags, host name, IP address, and agent version",
+"Incident severity and alert status",
+"User roles and permissions"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 94,
+"q": "An engineer needs to apply targeted policies to a fixed set of endpoints that rarely change. Which approach is MOST appropriate?",
+"options": [
+"Dynamic endpoint group using OS filters",
+"Static endpoint group with manual assignment",
+"Dynamic endpoint group using tags",
+"Rolling token-based grouping"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 95,
+"q": "An endpoint is tagged as \"Production.\" What ensures it is automatically included in the correct group?",
+"options": [
+"Manually adding it to a static group",
+"Using Endpoint Control → Assign Tags",
+"A dynamic group configured with a filter for the \"Production\" tag",
+"Generating a temporary token"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 96,
+"q": "An engineer assigns the tag \"Finance\" to multiple endpoints and wants them grouped automatically. Which configuration achieves this?",
+"options": [
+"Create a static group and manually add endpoints",
+"Create a dynamic group with a filter for tag = Finance",
+"Assign a rolling token to endpoints",
+"Use support file password grouping"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 97,
+"q": "Which characteristic defines a static endpoint group in Cortex XSIAM?",
+"options": [
+"Automatically updates based on tags",
+"Uses predefined filters for grouping",
+"Requires manual selection of endpoints",
+"Dynamically adjusts based on endpoint attributes"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 98,
+"q": "Which profile type is responsible for controlling how the agent reacts to attempts on vulnerabilities?",
+"options": [
+"Malware Prevention Profile",
+"Exploit Prevention Profile",
+"Restrictions Profile",
+"Agent Settings Profile"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 99,
+"q": "Which action mode allows execution but still sends activity telemetry back to Cortex for monitoring?",
+"options": [
+"Block",
+"Notify",
+"Report",
+"Disabled"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 100,
+"q": "Which profile is primarily used to limit attack surface by controlling where and how files can execute?",
+"options": [
+"Exploit Prevention Profile",
+"Malware Prevention Profile",
+"Restrictions Prevention Profile",
+"Exceptions Profile"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 101,
+"q": "An engineer wants to allow a known legitimate process that is being blocked by security controls. Which profile should be modified?",
+"options": [
+"Malware Prevention Profile",
+"Exploit Prevention Profile",
+"Exceptions Profile",
+"Agent Settings Profile"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 102,
+"q": "Which capability is unique to Malware Prevention Profiles compared to Exploit Prevention Profiles?",
+"options": [
+"Controlling exploit techniques in memory",
+"Quarantining malicious files and submitting unknown files to WildFire",
+"Defining process execution restrictions",
+"Managing agent disk quota"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 103,
+"q": "Which scenario best justifies using both static and dynamic endpoint groups in Cortex XSIAM?",
+"options": [
+"To ensure all endpoints are manually reviewed before grouping",
+"To allow fixed assignments while also adapting to changing endpoint attributes",
+"To eliminate the need for endpoint tagging",
+"To prevent policies from being applied automatically"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 105,
+"q": "Which configuration ensures that endpoint logs are forwarded to Cortex XSIAM from a Palo Alto NGFW?",
+"options": [
+"Enabling WildFire submission",
+"Applying a Log Forwarding Profile to security policies",
+"Configuring NAT rules for outbound traffic",
+"Enabling SSL decryption"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 106,
+"q": "A Cortex XSIAM engineer is reviewing the purpose of the Action Center. Which statement best describes its primary function?",
+"options": [
+"It is used exclusively for log ingestion and normalization.",
+"It centralizes and tracks endpoint investigation and response actions.",
+"It replaces all detection rules with automated responses.",
+"It is only used for viewing endpoint inventory data."
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 107,
+"q": "A Cortex XSIAM engineer wants to quickly view recently initiated response actions across the environment. Which view should be used?",
+"options": [
+"Isolation View",
+"All Actions",
+"External Dynamic List",
+"Endpoint Blocked IP Addresses View"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 108,
+"q": "A security team needs to manage files that are allowed or blocked regardless of verdict. Which Action Center feature should they use?",
+"options": [
+"Quarantine View",
+"Isolation View",
+"Block List and Allow List",
+"External Dynamic List"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 109,
+"q": "An engineer is investigating endpoints that have been disconnected from the network for containment. Which view provides this information?",
+"options": [
+"All Actions",
+"Isolation View",
+"Quarantine View",
+"Agent Script Library"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 110,
+"q": "A Cortex XSIAM engineer needs to manage dynamically updated threat intelligence feeds of IPs and domains. Which feature should be used?",
+"options": [
+"Endpoint Blocked IP Addresses View",
+"External Dynamic List",
+"Quarantine View",
+"All Actions"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 111,
+"q": "A Cortex XSIAM engineer is troubleshooting why a file retrieval request failed to start. Which condition would prevent cancellation of the action?",
+"options": [
+"The action is still pending",
+"Files have already been retrieved",
+"The endpoints are offline",
+"The file paths were incorrect"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 112,
+"q": "A Cortex XSIAM engineer is planning a file retrieval operation. Which limitation applies to this process?",
+"options": [
+"Maximum of 10 files from 20 endpoints",
+"Maximum of 20 files totaling 500 MB from up to 10 endpoints",
+"Unlimited files but capped at 1 GB",
+"Maximum of 10 files from unlimited endpoints"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 113,
+"q": "A security analyst retrieves files from endpoints for investigation. How long are retrieved files retained in the Action Center?",
+"options": [
+"7 days",
+"14 days",
+"30 days",
+"Indefinitely"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 114,
+"q": "A Cortex XSIAM engineer needs to retrieve support logs and generate a shareable link. What is the validity period of the generated link?",
+"options": [
+"24 hours",
+"3 days",
+"7 days",
+"30 days"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 115,
+"q": "A Cortex XSIAM engineer is configuring endpoint capabilities during agent installation. Which statement is correct regarding file retrieval?",
+"options": [
+"Disabling retrieval will cancel all ongoing retrieval actions",
+"File retrieval can only be enabled post installation",
+"Disabling retrieval during installation does not affect ongoing actions",
+"File retrieval cannot be disabled"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 116,
+"q": "A Cortex XSIAM engineer initiates a malware scan on multiple endpoints. Some endpoints are not scanned even though they were selected. What is the most likely reason?",
+"options": [
+"The endpoints are already isolated",
+"The endpoints are inactive or unsupported for scanning",
+"The malware profile excludes those endpoints",
+"The scan exceeded file size limits"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 117,
+"q": "Which statement correctly describes the behavior of canceling a malware scan?",
+"options": [
+"All scans can be canceled regardless of status",
+"Only scans in pending state can be canceled",
+"Only in progress scans can be canceled, not completed ones",
+"Canceling a scan rolls back all detected threats"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 118,
+"q": "An engineer isolates an endpoint during an investigation. What is a direct consequence of this action?",
+"options": [
+"The endpoint loses all communication including with the tenant",
+"The endpoint continues to receive content updates",
+"The endpoint can only communicate with the tenant",
+"The endpoint automatically reboots"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 119,
+"q": "Which limitation applies when an endpoint is isolated?",
+"options": [
+"Scripts cannot be executed",
+"The agent cannot send logs",
+"The agent does not receive upgrades",
+"File retrieval is disabled"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 120,
+"q": "A security engineer adds a file hash to the allow list. What is the resulting behavior?",
+"options": [
+"All endpoint protections for the file are disabled",
+"The file bypasses only WildFire and local verdict checks",
+"The file is permanently trusted and ignored by all policies",
+"The file is removed from all future scans"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 121,
+"q": "Which statement about custom malware scans is TRUE?",
+"options": [
+"Available on all operating systems",
+"Only configurable via malware profile",
+"Available only on Windows endpoints",
+"Requires broker VM"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 122,
+"q": "An engineer imports a CSV file using \"Import Hash Exceptions.\" How does Cortex XSIAM determine where hashes are placed?",
+"options": [
+"Based on user selection during import",
+"Based on endpoint profile",
+"Based on assigned verdict of the hash",
+"All hashes are placed in both lists"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 123,
+"q": "Which capability is unique to Interactive Mode during script execution?",
+"options": [
+"Script persistence",
+"Ability to modify malware profiles",
+"Real-time monitoring and chaining additional scripts",
+"Automatic rollback on failure"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 124,
+"q": "A file is added to the block list. Which statement is correct?",
+"options": [
+"The file can still execute if allowed by policy",
+"The block list overrides other policy rules",
+"The file is only blocked if WildFire marks it malicious",
+"The file is quarantined automatically"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 125,
+"q": "What is the maximum number of endpoints that can be targeted in a single malware scan action?",
+"options": [
+"10",
+"20",
+"50",
+"100"
+],
+"correct": [
+3
+],
+"set": "study"
+},
+{
+"n": 126,
+"q": "A Cortex XSIAM engineer needs to ingest application logs from a custom web server without modifying the application to send syslog. What is the best approach?",
+"options": [
+"Configure syslog forwarding to Broker VM",
+"Deploy XDR Collector on the server and monitor file path",
+"Use XDR agent default collection",
+"Create a correlation rule for ingestion"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 127,
+"q": "Which requirement is mandatory for XDR Collector communication with the Cortex tenant?",
+"options": [
+"UDP 514 open",
+"TCP 443 open",
+"TCP 22 open",
+"ICMP enabled"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 128,
+"q": "What happens if an active XDR Collector installation package is deleted?",
+"options": [
+"Collector continues without impact",
+"Collector loses log ingestion capability only",
+"Collector registration may fail",
+"Collector switches to Broker VM"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 129,
+"q": "Which path is most relevant when troubleshooting ingestion issues on an XDR Collector?",
+"options": [
+"Installation path",
+"Logs path",
+"Persistence path",
+"Configuration path"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 130,
+"q": "An engineer wants to ensure collectors only upgrade during weekends. Which configuration should be adjusted?",
+"options": [
+"Parallel upgrades",
+"FQDN settings",
+"Days and Weeks schedule",
+"Persistence path"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 131,
+"q": "Which statement best describes the role of the persistence path?",
+"options": [
+"Stores logs for troubleshooting",
+"Contains XML configuration",
+"Tracks collector registration with Cortex",
+"Stores installation binaries"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 132,
+"q": "Which technology is responsible for handling large-scale log ingestion in XDR Collectors?",
+"options": [
+"Logstash",
+"FileBeat",
+"Fluentd",
+"Syslog-ng"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 133,
+"q": "What is a key benefit of using WinLogBeat within XDR Collectors?",
+"options": [
+"Enables Linux log ingestion",
+"Provides Windows activity visibility",
+"Handles proxy configuration",
+"Encrypts log data"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 134,
+"q": "Which of the following is TRUE regarding XDR Collector audit logs?",
+"options": [
+"Stored for 30 days",
+"Only accessible via XQL",
+"Stored for 365 days",
+"Stored locally only"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 135,
+"q": "During installation on Linux, what is a required step before running the installer?",
+"options": [
+"Configure syslog forwarding",
+"Create and populate configuration directory",
+"Enable Windows services",
+"Open port 514"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 136,
+"q": "An engineer is troubleshooting ingestion issues on a Windows-based XDR Collector and needs to review FileBeat logs. Which path should they check?",
+"options": [
+"%PROGRAMFILES%\\Palo Alto Networks\\XDR Collector",
+"%PROGRAMDATA%\\XDR Collector\\logs",
+"%PROGRAMFILES%\\Palo Alto Networks\\XDR Collector\\config",
+"%PROGRAMDATA%\\XDR Collector\\OSPersistence"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 137,
+"q": "Which Linux path contains the XML configuration file used to modify XDR Collector behavior?",
+"options": [
+"/opt/paloaltonetworks/xdr-collector/logs",
+"/etc/panw/OSPersistence/",
+"/opt/paloaltonetworks/xdr-collector/config",
+"/opt/paloaltonetworks/xdr-collector"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 138,
+"q": "A Cortex XSIAM engineer wants to verify whether a collector is properly registered with the tenant on a Linux system. Which path should be inspected?",
+"options": [
+"/opt/paloaltonetworks/xdr-collector",
+"/opt/paloaltonetworks/xdr-collector/config",
+"/opt/paloaltonetworks/xdr-collector/logs",
+"/etc/panw/OSPersistence/"
+],
+"correct": [
+3
+],
+"set": "study"
+},
+{
+"n": 139,
+"q": "Which statement correctly maps the installation directory between Windows and Linux?",
+"options": [
+"Windows: %PROGRAMDATA%\\XDR Collector; Linux: /etc/panw/OSPersistence/",
+"Windows: %PROGRAMFILES%\\Palo Alto Networks\\XDR Collector; Linux: /opt/paloaltonetworks/xdr-collector",
+"Windows: %PROGRAMFILES%\\Palo Alto Networks\\XDR Collector\\config; Linux: /opt/paloaltonetworks/xdr-collector/logs",
+"Windows: %PROGRAMDATA%\\XDR Collector\\logs; Linux: /opt/paloaltonetworks/xdr-collector"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 140,
+"q": "An engineer mistakenly modifies files under %PROGRAMFILES%\\Palo Alto Networks\\XDR Collector\\config on a Windows collector. What is the most likely impact?",
+"options": [
+"Loss of collector registration",
+"Failure to collect logs due to configuration changes",
+"Collector stops writing logs",
+"Collector cannot connect due to missing persistence"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 141,
+"q": "Which path combination correctly represents the logs directory across both operating systems?",
+"options": [
+"Windows: %PROGRAMFILES%\\Palo Alto Networks\\XDR Collector\\logs; Linux: /opt/paloaltonetworks/xdr-collector",
+"Windows: %PROGRAMDATA%\\XDR Collector\\logs; Linux: /opt/paloaltonetworks/xdr-collector/logs",
+"Windows: %PROGRAMDATA%\\XDR Collector\\OSPersistence; Linux: /etc/panw/OSPersistence/",
+"Windows: %PROGRAMFILES%\\Palo Alto Networks\\XDR Collector; Linux: /opt/paloaltonetworks/xdr-collector/config"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 142,
+"q": "An engineer needs to determine why a collector is not reconnecting after restart. Which location is MOST relevant?",
+"options": [
+"Logs path",
+"Installation path",
+"Persistence path",
+"Configuration path"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 143,
+"q": "Which of the following correctly describes the purpose of %PROGRAMDATA%\\XDR Collector\\OSPersistence?",
+"options": [
+"Stores collector binaries",
+"Stores XML configuration",
+"Tracks registration with Cortex XSIAM",
+"Stores FileBeat logs"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 144,
+"q": "An engineer reviews /opt/paloaltonetworks/xdr-collector/config and sees no issues, but the collector is still not sending logs. What is the NEXT best location to investigate?",
+"options": [
+"/etc/panw/OSPersistence/",
+"/opt/paloaltonetworks/xdr-collector",
+"/opt/paloaltonetworks/xdr-collector/logs",
+"Reinstall the collector"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 145,
+"q": "Which component is MOST directly responsible for maintaining collector connectivity state across reboots?",
+"options": [
+"Installation directory",
+"Logs directory",
+"Configuration directory",
+"Persistence directory"
+],
+"correct": [
+3
+],
+"set": "study"
+},
+{
+"n": 146,
+"q": "A Cortex XSIAM engineer attempts to install an XDR Collector on Linux but runs the installer before creating /etc/panw/ and copying the configuration file. What is the most likely outcome?",
+"options": [
+"Installation completes successfully but logs are not collected",
+"Installation fails due to missing dependencies",
+"Collector installs but fails to properly register with the tenant",
+"Collector installs and auto-generates the configuration"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 147,
+"q": "Which sequence correctly represents the Linux installation workflow for an XDR Collector?",
+"options": [
+"Run installer → Extract files → Configure directory",
+"Extract files → Run installer → Create configuration directory",
+"Extract files → Create /etc/panw/ and copy config → Run installer",
+"Create /etc/panw/ → Run installer → Extract files"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 148,
+"q": "During installation troubleshooting, an engineer realizes the configuration file was copied after running the installer. What should be expected?",
+"options": [
+"No impact, configuration is dynamically loaded",
+"Collector will automatically reload configuration",
+"Collector may not function correctly and require reinstall",
+"Only logging functionality is impacted"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 150,
+"q": "A Cortex XSIAM engineer wants to limit the number of simultaneous XDR Collector upgrades. What is the maximum value that can be configured?",
+"options": [
+"100",
+"250",
+"500",
+"Unlimited"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 151,
+"q": "Which setting controls how many XDR Collectors can be upgraded at the same time?",
+"options": [
+"Schedule",
+"Days in Week",
+"Parallel Upgrades",
+"Upgrade Window"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 152,
+"q": "Where in Cortex XSIAM should an engineer navigate to configure the XDR Collector upgrade scheduler?",
+"options": [
+"Settings → Agent Settings → Upgrade Policies",
+"Settings → Configurations → XDR Collectors → Configurations",
+"Investigation → Response → Action Center",
+"Settings → Integrations → Collectors"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 153,
+"q": "Which configuration allows upgrades to occur at any time without restriction?",
+"options": [
+"Set Days in Week to all days",
+"Set Schedule to \"Any time\"",
+"Set Parallel Upgrades to maximum",
+"Disable upgrade scheduler"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 154,
+"q": "An engineer configures:\n\n- Parallel Upgrades = 100\n- Days in Week = All days\n- Schedule = From 22:00 To 04:00\n\nWhen will upgrades occur?",
+"options": [
+"Only between 22:00 and 04:00 daily, max 100 at a time",
+"Only between 04:00 and 22:00 daily",
+"Anytime during the day, limited to 100",
+"Only once per week"
+],
+"correct": [
+0
+],
+"set": "study"
+},
+{
+"n": 155,
+"q": "Which setting has no impact on WHEN upgrades occur, but only affects scale?",
+"options": [
+"Days in Week",
+"Schedule (From/To)",
+"Parallel Upgrades",
+"Upgrade Time Window"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 156,
+"q": "An engineer configures syslog forwarding from an NGFW to Cortex but notices Enhanced Application Logs (EALs) are missing. What is the root cause?",
+"options": [
+"Broker VM not configured",
+"API integration required",
+"Syslog does not support EALs",
+"Panorama plugin missing"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 157,
+"q": "Which ingestion method is required to obtain Enhanced Application Logs (EALs) in Cortex?",
+"options": [
+"Syslog",
+"Broker VM",
+"Native integration",
+"CSV upload"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 158,
+"q": "What is the role of the Broker VM in NGFW data ingestion?",
+"options": [
+"Executes correlation rules",
+"Acts as data relay and normalizes logs",
+"Stores logs permanently",
+"Applies threat intelligence"
+],
+"correct": [
+1
+],
+"set": "study"
+},
+{
+"n": 159,
+"q": "At which stage are logs augmented with contextual data such as threat intelligence?",
+"options": [
+"Ingestion",
+"Normalization",
+"Enrichment",
+"Correlation"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 160,
+"q": "An engineer wants to validate NGFW log ingestion quickly without running queries. What is the fastest method?",
+"options": [
+"Check correlation rules",
+"View Action Center",
+"Check last communication timestamp",
+"Restart collector"
+],
+"correct": [
+2
+],
+"set": "study"
+},
+{
+"n": 161,
+"q": "Which prerequisite is required before ingesting NGFW logs via Panorama?",
+"options": [
+"Broker VM deployment",
+"Panorama Cloud Services plugin",
+"XDR Collector installation",
+"Syslog configuration"
+],
+"correct": [
+1
+],
+"set": "study"
+}
+];
+
+const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+let order = [];
+let idx = 0;
+let answers = [];            // { qIndex, chosen: [originalIdx], correct }
+let currentOptionOrder = []; // displayed position -> original option index
+let picked = new Set();      // original option indexes selected on a multi-answer question
+let answered = false;
+
+const $ = id => document.getElementById(id);
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Plain text with optional ```fenced``` blocks and `inline code`, escaped for innerHTML.
+function rich(s) {
+  return String(s).split(/```[^\n]*\n?/).map((part, i) => {
+    if (i % 2) return '<pre class="code">' + esc(part.replace(/\n+$/, '')) + '</pre>';
+    return esc(part.replace(/^\n+|\n+$/g, '')).replace(/`([^`]+)`/g, '<code class="inline">$1</code>');
+  }).join('');
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function sameSet(a, b) {
+  return a.length === b.length && a.every(x => b.includes(x));
+}
+
+$('totalCount').textContent = QUESTIONS.length;
+
+const MODES = [
+  ['all', 'All Questions (' + QUESTIONS.length + ')'],
+  ['random25', 'Random 25 Questions'],
+  ['random50', 'Random 50 Questions'],
+  ['exam', 'Original Practice Exam (' + QUESTIONS.filter(q => q.set === 'exam').length + ')'],
+  ['study', 'Additional Study Questions (' + QUESTIONS.filter(q => q.set === 'study').length + ')'],
+  ['multi', 'Choose-Two Questions Only (' + QUESTIONS.filter(q => q.correct.length > 1).length + ')']
+];
+MODES.forEach(([v, label]) => {
+  const o = document.createElement('option');
+  o.value = v; o.textContent = label;
+  $('modeSelect').appendChild(o);
+});
+
+// Fullscreen API exists mainly on Android Chrome and needs a user gesture.
+const fullscreenBtn = $('fullscreenBtn');
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+  || window.navigator.standalone === true;
+if (document.documentElement.requestFullscreen && !isStandalone) {
+  fullscreenBtn.classList.remove('hidden');
+  fullscreenBtn.addEventListener('click', () => {
+    document.documentElement.requestFullscreen().catch(() => {});
+  });
+}
+
+function startRun(indices) {
+  order = indices;
+  idx = 0;
+  answers = [];
+  $('setup').classList.add('hidden');
+  $('summary').classList.add('hidden');
+  $('quizArea').classList.remove('hidden');
+  renderQuestion();
+}
+
+$('startBtn').addEventListener('click', () => {
+  const mode = $('modeSelect').value;
+  let indices = QUESTIONS.map((_, i) => i);
+  if (mode === 'exam') indices = indices.filter(i => QUESTIONS[i].set === 'exam');
+  else if (mode === 'study') indices = indices.filter(i => QUESTIONS[i].set === 'study');
+  else if (mode === 'multi') indices = indices.filter(i => QUESTIONS[i].correct.length > 1);
+
+  if (mode === 'random25') indices = shuffle(indices).slice(0, 25);
+  else if (mode === 'random50') indices = shuffle(indices).slice(0, 50);
+  else indices = shuffle(indices);
+
+  startRun(indices);
+});
+
+$('restartBtn').addEventListener('click', () => {
+  $('quizArea').classList.add('hidden');
+  $('summary').classList.add('hidden');
+  $('setup').classList.remove('hidden');
+});
+
+$('nextBtn').addEventListener('click', () => {
+  idx++;
+  if (idx >= order.length) renderSummary();
+  else renderQuestion();
+});
+
+$('submitBtn').addEventListener('click', () => {
+  if (!answered) grade(order[idx], Array.from(picked));
+});
+
+function renderQuestion() {
+  const qIndex = order[idx];
+  const q = QUESTIONS[qIndex];
+  const multi = q.correct.length > 1;
+  answered = false;
+  picked = new Set();
+
+  $('qPosition').textContent = 'Question ' + (idx + 1) + ' of ' + order.length;
+  $('liveScore').textContent = 'Score: ' + answers.filter(a => a.correct).length + '/' + answers.length;
+  $('barFill').style.width = ((idx / order.length) * 100) + '%';
+
+  const img = $('qimg');
+  if (q.img) { img.src = q.img; img.classList.remove('hidden'); }
+  else { img.removeAttribute('src'); img.classList.add('hidden'); }
+
+  $('qtext').innerHTML = rich(q.q) + (multi ? '<span class="badge">Select ' + q.correct.length + '</span>' : '');
+
+  const optionsEl = $('options');
+  optionsEl.innerHTML = '';
+  currentOptionOrder = shuffle(q.options.map((_, i) => i));
+  currentOptionOrder.forEach((originalIndex, displayPos) => {
+    const div = document.createElement('div');
+    div.className = 'option';
+    div.innerHTML = '<span class="letter">' + LETTERS[displayPos] + '</span><span class="otext">' + rich(q.options[originalIndex]) + '</span>';
+    div.addEventListener('click', () => onPick(qIndex, originalIndex, div));
+    optionsEl.appendChild(div);
+  });
+
+  $('feedback').className = 'feedback';
+  $('feedback').textContent = '';
+  $('nextBtn').disabled = true;
+  $('submitBtn').classList.toggle('hidden', !multi);
+  $('submitBtn').disabled = true;
+}
+
+function onPick(qIndex, originalIndex, el) {
+  if (answered) return;
+  const q = QUESTIONS[qIndex];
+  if (q.correct.length === 1) {
+    grade(qIndex, [originalIndex]);
+    return;
+  }
+  if (picked.has(originalIndex)) {
+    picked.delete(originalIndex);
+    el.classList.remove('selected');
+  } else if (picked.size < q.correct.length) {
+    picked.add(originalIndex);
+    el.classList.add('selected');
+  }
+  $('submitBtn').disabled = picked.size !== q.correct.length;
+}
+
+function answerText(q, list) {
+  return list.slice().sort((a, b) => a - b).map(i => q.options[i]).join('\n');
+}
+
+function grade(qIndex, chosen) {
+  answered = true;
+  const q = QUESTIONS[qIndex];
+  const isCorrect = sameSet(chosen, q.correct);
+  answers.push({ qIndex, chosen, correct: isCorrect });
+
+  document.querySelectorAll('#options .option').forEach((el, displayPos) => {
+    const oi = currentOptionOrder[displayPos];
+    el.classList.add('locked');
+    if (q.correct.includes(oi)) el.classList.add('correct');
+    if (chosen.includes(oi) && !q.correct.includes(oi)) el.classList.add('incorrect');
+    if (chosen.includes(oi)) el.classList.add('selected');
+  });
+
+  const fb = $('feedback');
+  fb.classList.add('show', isCorrect ? 'right' : 'wrong');
+  fb.textContent = isCorrect ? 'Correct.' : 'Incorrect. The correct answer is highlighted in green.';
+  if (q.explain) fb.textContent += '\n\n' + q.explain;
+
+  $('liveScore').textContent = 'Score: ' + answers.filter(a => a.correct).length + '/' + answers.length;
+  $('submitBtn').disabled = true;
+  $('nextBtn').disabled = false;
+  $('nextBtn').focus();
+}
+
+function renderSummary() {
+  $('quizArea').classList.add('hidden');
+  const summaryEl = $('summary');
+  summaryEl.classList.remove('hidden');
+
+  const total = answers.length;
+  const correct = answers.filter(a => a.correct).length;
+  const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+  let html = '<h2>Results</h2><div class="score">' + correct + ' / ' + total + ' (' + pct + '%)</div>';
+
+  const wrong = answers.filter(a => !a.correct);
+  if (wrong.length > 0) {
+    html += '<h3 style="margin-top:30px;">Review missed questions (' + wrong.length + ')</h3>';
+    wrong.forEach(a => {
+      const q = QUESTIONS[a.qIndex];
+      html += '<div class="review-item"><div class="tag">Missed</div><div>' + rich(q.q) + '</div>'
+        + '<div style="margin-top:8px; color: var(--bad);">Your answer:\n' + rich(answerText(q, a.chosen)) + '</div>'
+        + '<div style="margin-top:8px; color: var(--good);">Correct answer:\n' + rich(answerText(q, q.correct)) + '</div></div>';
+    });
+  } else if (total > 0) {
+    html += '<div style="margin-top:20px;">Perfect run. No missed questions.</div>';
+  }
+
+  html += '<div style="margin-top:30px;">'
+    + (wrong.length ? '<button id="retryBtn" class="primary">Retry missed</button>' : '')
+    + '<button id="againBtn">Back to start</button></div>';
+  summaryEl.innerHTML = html;
+
+  $('againBtn').addEventListener('click', () => {
+    summaryEl.classList.add('hidden');
+    $('setup').classList.remove('hidden');
+  });
+  if (wrong.length) {
+    $('retryBtn').addEventListener('click', () => startRun(shuffle(wrong.map(a => a.qIndex))));
+  }
+}
+</script>
+</body>
+</html>
